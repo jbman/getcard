@@ -1,0 +1,29 @@
+body {
+  color: #212121;
+  font-family: "Helvetica Neue", "Calibri Light", Roboto, sans-serif;
+}
+.photoframe {
+  display: inline-flex;
+  flex-direction: column;
+  margin: 12px;
+  box-shadow: 10px 10px 10px silver;
+  padding: 10px 10px 10px 10px;
+  border: 1px solid gray;
+  background: linear-gradient(-45deg, rgba(255,255,255,1) 0%,#efefef 100%);
+}
+img {
+  width: 100%;
+}
+.photolink {
+  text-align: right;
+  padding-top: 4px;
+  font-size: 12px;
+}
+.photoowner {
+  text-align: right;
+  padding-top: 4px;
+  font-size: 9px;
+}
+.photolink:link, .photolink:visited, .photolink:hover, .photolink:active {
+  color: black;
+}

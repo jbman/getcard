@@ -7,9 +7,13 @@
   // Compile HTML templates into JS template render functions
   var templateScript = document.getElementById("photo-template").innerHTML;
   var photoTemplate = Handlebars.compile(templateScript);
+  var searchTextElement = document.getElementById("search-text");
+  var searchButtonElement = document.getElementById("search-button")
 
-  function jsonFlickrApi(json) {
-
+  function showPhotos(json) {
+    // Clear existing photo elements
+    removeAllChildren("images");
+    // Show photos
     json.photos.photo.forEach(function(photo, i) {
       var photoHtml = photoTemplate({
         imgSrc: "https://farm" + photo.farm + ".staticflickr.com/" +
@@ -23,12 +27,20 @@
     });
   };
 
-  function infoLoaded(json) {
+  function showPhotoOwner(json) {
     var owner = json.photo.owner.realname;
     if (owner.length < 1) {
       owner = json.photo.owner.username
     }
     document.getElementById("owner-"+ json.photo.id).innerHTML = "by " + owner;
+  }
+
+  function removeAllChildren(elementId)
+  {
+    var node = document.getElementById(elementId);
+    while (node.firstChild) {
+      node.removeChild(node.firstChild);
+    }
   }
 
   function getUrlParam(variable)
@@ -37,7 +49,11 @@
          var vars = query.split("&");
          for (var i=0;i<vars.length;i++) {
                  var pair = vars[i].split("=");
-                 if(pair[0] == variable){return pair[1];}
+                 if(pair[0] == variable){
+                   var value = pair[1];
+                   if (value.length > 0)
+                     return value;
+                 }
          }
          return false ;
   }
@@ -50,35 +66,28 @@
       data: {
         "format": "json",
         "api_key": KEY,
-        "jsoncallback": "infoLoaded",
+        "jsoncallback": "showPhotoOwner",
         "photo_id": photoId
       }
     });
 
   }
 
-  function loadImages() {
+  function loadPhotos(tags) {
     var data = {
       "api_key": KEY,
       "media": "photos",
-      "text": text,
       "tags": tags,
-      "styles": "depthoffield",
-      //"styles": "pattern",
+      // "text": text
+      // "styles": "depthoffield",
+      // "styles": "pattern",
       "tag_mode": "all",
       "per_page": 3,
       "license": "1,2,4,5,7",
       "sort": "interestingness-desc",
-      "format": "json"
+      "format": "json",
+      "jsoncallback": "showPhotos",
     };
-    var text = getUrlParam("text");
-    if (text) {
-      data.text = text;
-    }
-    var tags = getUrlParam("tags");
-    if (tags) {
-      data.tags = tags;
-    }
     $.ajax({
       url: 'https://api.flickr.com/services/rest/?method=flickr.photos.search',
       dataType: 'jsonp',
@@ -86,7 +95,32 @@
     });
   }
 
-  window.jsonFlickrApi = jsonFlickrApi;
-  window.infoLoaded = infoLoaded;
-  loadImages();
+  function onSearchButtonClick() {
+      var searchTextValue = searchTextElement.value;
+      // Update URL with the new search text to get a referencable URL and a URL history entry
+      var title = "[_] with " + searchTextValue;
+      window.history.pushState(null, searchTextValue, "?tags=" + searchTextValue);
+      document.title = title; // FF doesn't updat title provided to pushState
+      loadPhotos(searchTextValue);
+  }
+
+  searchButtonElement.onclick = onSearchButtonClick;
+
+  // Click search button when enter is hit in search text field
+  searchTextElement.onkeypress = function(e) {
+    var keyCode = e.keyCode || e.which;
+    if (keyCode == '13'){
+      onSearchButtonClick();
+      return false;
+    }
+  }
+
+  // Export callback functions
+  window.showPhotos = showPhotos;
+  window.showPhotoOwner = showPhotoOwner;
+
+  // When page is loaded: Load photos based on URL parameter
+  var tags = getUrlParam("tags") || "kitten";
+  searchTextElement.value = tags;
+  loadPhotos(tags);
 })(window, document);

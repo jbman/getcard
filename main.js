@@ -113,6 +113,12 @@
     var title = "[_] with " + tags;
     document.title = title; // FF doesn't update title provided to pushState
 
+    // License ids: https://www.flickr.com/services/api/explore/flickr.photos.licenses.getInfo
+    // 1, "name": "Attribution-NonCommercial-ShareAlike License", "url": "https:\/\/creativecommons.org\/licenses\/by-nc-sa\/2.0\/"
+    // 2, "name": "Attribution-NonCommercial License", "url": "https:\/\/creativecommons.org\/licenses\/by-nc\/2.0\/" },
+    // 4, "name": "Attribution License", "url": "https:\/\/creativecommons.org\/licenses\/by\/2.0\/" },
+    // 5, "name": "Attribution-ShareAlike License", "url": "https:\/\/creativecommons.org\/licenses\/by-sa\/2.0\/" },
+
     var data = {
       "method": "flickr.photos.search",
       "api_key": KEY,
@@ -123,7 +129,7 @@
       // "styles": "pattern",
       "tag_mode": "all",
       "per_page": 3,
-      "license": "1,2,4,5,7",
+      "license": "1,2,4,5",
       "sort": "interestingness-desc",
       "format": "json",
       "jsoncallback": "showPhotos",

@@ -1,8 +1,12 @@
 body {
-  color: #212121;
+  background-color: #f8f8f8;
+  color: #2A2A2A;
   font-family: "Helvetica Neue", "Calibri Light", Roboto, sans-serif;
   padding-top: 10px;
   font-size: 14px;
+}
+a:link, a:visited, a:hover, a:active {
+  color: black;
 }
 .search {
   text-align: center;
@@ -62,6 +66,7 @@ img {
   padding-top: 4px;
   font-size: 9px;
 }
-.photolink:link, .photolink:visited, .photolink:hover, .photolink:active {
-  color: black;
+.footer {
+  text-align: center;
+  font-size: 11px;
 }

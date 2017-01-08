@@ -13,7 +13,8 @@
       <input id="search-text" type=text/> <input id="search-button" type="button" value="now"/>
     <span>
   </div>
-  <div id="images" />
+  <div id="message"></div>
+  <div id="images"></div>
   <script id="photo-template" type="text/x-handlebars-template">
     ​<div class="photoframe">
       <img src="{{imgSrc}}" alt="{{photoTitle}}"></img>
@@ -21,15 +22,12 @@
       <span id="{{ownerSpanId}}" class="photoowner">(...loading owner)</span>
     </div>
   </script>
-  <script id="empty-result-template" type="text/x-handlebars-template">
-    <div class="empty-result">Getcard is sorry, nothing found with {{tags}}.</div>
+  <script id="message-template" type="text/x-handlebars-template">
+    <div class="message">{{message}}</div>
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.6/handlebars.min.js"
     integrity="sha256-1O3BtOwnPyyRzOszK6P+gqaRoXHV6JXj8HkjZmPYhCI=" crossorigin="anonymous">
   </script>
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js"
-    	integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous">
-    </script>
   <script src="main.js"></script>
 </body>
 </html>

@@ -36,8 +36,9 @@ body {
   flex-wrap: wrap;
   justify-content: center;
 }
-.empty-result {
+.message {
   margin: 20px;
+  text-align: center;
 }
 .photoframe {
   display: inline-flex;

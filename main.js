@@ -6,7 +6,7 @@
 
   // Compile HTML templates into JS template render functions
   const photoTemplate = Handlebars.compile(document.getElementById("photo-template").innerHTML);
-  const emptyResultTemplate = Handlebars.compile(document.getElementById("empty-result-template").innerHTML);
+  const messageTemplate = Handlebars.compile(document.getElementById("message-template").innerHTML);
 
   const searchTextElement = document.getElementById("search-text");
   // Click search button when enter is hit in search text field
@@ -15,8 +15,19 @@
   const searchButtonElement = document.getElementById("search-button");
   searchButtonElement.onclick = loadPhotosBasedOnSearchInput;
 
+  /* Inserts HTML at the given target element behind all children. */
+  function insertHtml(elementId, html) {
+      document.getElementById(elementId).insertAdjacentHTML("beforeend", html);
+  }
+
+  function showMessage(text) {
+    removeAllChildren("message");
+    insertHtml("message", messageTemplate({"message": text}));
+  }
+
   function showPhotos(json) {
-    // Clear existing photo elements
+    // Clear existing message or photos
+    removeAllChildren("message");
     removeAllChildren("images");
 
     // Show photos
@@ -28,14 +39,13 @@
         photoTitle: photo.title,
         ownerSpanId: "owner-" + photo.id,
       });
-      document.getElementById("images").insertAdjacentHTML("beforeend", photoHtml);
+      insertHtml("images", photoHtml);
       loadInfo(photo.id);
     });
 
     // Show message if no photos found.
     if (json.photos.photo.length <= 0) {
-      var emptyResultHtml = emptyResultTemplate({"tags": searchTextElement.value });
-      document.getElementById("images").insertAdjacentHTML("beforeend", emptyResultHtml);
+      showMessage("Getcard is sorry, nothing found with " + searchTextElement.value + ".");
     }
   };
 
@@ -70,28 +80,41 @@
     return false ;
   }
 
+  /**
+   * Inserts a script so that a scriopt with a callback and the json data is returned.
+   */
+  function loadJsonP(url, data) {
+    var parameters = Object.keys(data).map( key => { return key + "=" + data[key] })
+    url = url + "?" + parameters.join("&");
+    var scriptElement = document.createElement("script");
+    scriptElement.setAttribute("src", url);
+    var head = document.getElementsByTagName("head")[0];
+    head.appendChild(scriptElement);
+    // Removing the element right away did work in FF and Chrome
+    head.removeChild(scriptElement);
+  };
+
   // https://mashupguide.net/1.0/html/ch08s07.xhtml
   function loadInfo(photoId) {
-    $.ajax({
-      url: 'https://api.flickr.com/services/rest/?method=flickr.photos.getInfo',
-      dataType: 'jsonp',
-      data: {
-        "format": "json",
-        "api_key": KEY,
-        "jsoncallback": "showPhotoOwner",
-        "photo_id": photoId
-      }
-    });
-
+    var data = {
+      "method": "flickr.photos.getInfo",
+      "format": "json",
+      "api_key": KEY,
+      "jsoncallback": "showPhotoOwner",
+      "photo_id": photoId
+    }
+    loadJsonP("https://api.flickr.com/services/rest", data);
   }
 
   function loadPhotos(tags) {
+    showMessage("Hold on, Getcard loads you some photos...");
 
     // Update URL with the new search text to get a referencable URL and a URL history entry
     var title = "[_] with " + tags;
     document.title = title; // FF doesn't update title provided to pushState
 
     var data = {
+      "method": "flickr.photos.search",
       "api_key": KEY,
       "media": "photos",
       "tags": tags,
@@ -105,11 +128,7 @@
       "format": "json",
       "jsoncallback": "showPhotos",
     };
-    $.ajax({
-      url: 'https://api.flickr.com/services/rest/?method=flickr.photos.search',
-      dataType: 'jsonp',
-      data: data
-    });
+    loadJsonP("https://api.flickr.com/services/rest", data);
   }
 
   /** Loads photos after based on the text in the search field  */

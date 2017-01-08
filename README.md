@@ -1,6 +1,6 @@
 # Getcard
 
-JS app which uses the flickr API to search and show photo cards. Try it at https://github.com/jbman/getcard.
+JS app which uses the flickr API to search and show photo cards. Try it at https://jbman.github.io/getcard.
 
 No build tools are used, so the files are ready to be served as web page.
 

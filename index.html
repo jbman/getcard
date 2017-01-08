@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Getcard [_][_][_]</title>
+  <title>Getcard [_]</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -10,19 +10,29 @@
   <div class="search">
     Get me cards with
     <span class="nowrap-container">
-      <input id="search-text" type=text/> <input id="search-button" type="button" value="now"/>
-    <span>
+      <input id="search-text" type="text"/> <input id="search-button" type="button" value="now"/>
+    </span>
   </div>
   <div id="message"></div>
   <div id="images"></div>
   <footer class="footer">
-    &#xa9; 2017 by Johannes Bergmann - Made with &#x2661;, HTML5, CSS, <a href="http://vanilla-js.com/">Vanilla JS</a>, <a href="http://handlebarsjs.com">handlebars</a>, the <a href="https://www.flickr.com/services/">flickr API</a> and your lovely photos shared with a <a href="https://creativecommons.org">CC</a> license - View the source on <a href="https://github.com/jbman/getcard">Github</a>
+    &#xa9; 2017 by Johannes Bergmann - Made with &#x2661;, HTML5, CSS, <a href="http://vanilla-js.com/">Vanilla JS</a>, <a href="http://handlebarsjs.com">handlebars</a>, <a href="https://github.com/pieroxy/lz-string">lz-string</a>, the <a href="https://www.flickr.com/services/">flickr API</a> and your lovely photos shared with a <a href="https://creativecommons.org">CC</a> license - View the source on <a href="https://github.com/jbman/getcard">Github</a>
   </footer>
   <script id="photo-template" type="text/x-handlebars-template">
-    ​<div class="photoframe">
-      <img src="{{imgSrc}}" alt="{{photoTitle}}"></img>
+    ​<div class="photoframe {{#if fullSize}}fullsize{{/if}}">
+      {{#if cardText}}
+      <div id="text-display" class="cardtext">{{cardText}}</div>
+      <input id="text-edit" class="cardtext-edit" type="text" style="display:none"/>
+      {{/if}}
+      {{#href cardLink}}
+      <img class="photo" src="{{imgSrc}}" alt="{{photoTitle}}"></img>
+      {{/href}}
       <a class="photolink" href="{{photoLink}}" target="_blank">{{photoTitle}}</a>
+      {{#if ownerSpanId}}
       <span id="{{ownerSpanId}}" class="photoowner">(...loading owner)</span>
+      {{else}}
+      <span class="photoowner">{{photoOwner}}</span>
+      {{/if}}
     </div>
   </script>
   <script id="message-template" type="text/x-handlebars-template">
@@ -30,6 +40,9 @@
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.6/handlebars.min.js"
     integrity="sha256-1O3BtOwnPyyRzOszK6P+gqaRoXHV6JXj8HkjZmPYhCI=" crossorigin="anonymous">
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"
+    integrity="sha256-nRoO8HoupfqozUr7YKBRgHXmdx40Hl/04OSBzv7e7L8=" crossorigin="anonymous">
   </script>
   <script src="main.js"></script>
   <script>

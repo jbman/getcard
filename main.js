@@ -8,12 +8,24 @@
   const photoTemplate = Handlebars.compile(document.getElementById("photo-template").innerHTML);
   const messageTemplate = Handlebars.compile(document.getElementById("message-template").innerHTML);
 
+  Handlebars.registerHelper('href', function(context, options) {
+      if (context) {
+        return new Handlebars.SafeString('<a href="' + context + '">' + options.fn(this) + '</a>');
+      }
+      else {
+        return options.fn(this);
+      }
+    });
+
   const searchTextElement = document.getElementById("search-text");
   // Click search button when enter is hit in search text field
-  searchTextElement.onkeypress = (e) => { onEnter(e, loadPhotosBasedOnSearchInput) };
+  searchTextElement.onkeypress = function(e) { onEnter(e, loadPhotosBasedOnSearchInput) };
 
   const searchButtonElement = document.getElementById("search-button");
   searchButtonElement.onclick = loadPhotosBasedOnSearchInput;
+
+  function getTextDisplayElement() { return document.getElementById("text-display")} ;
+  function getTextEditElement() { return document.getElementById("text-edit")} ;
 
   /* Inserts HTML at the given target element behind all children. */
   function insertHtml(elementId, html) {
@@ -35,12 +47,13 @@
       var photoHtml = photoTemplate({
         imgSrc: "https://farm" + photo.farm + ".staticflickr.com/" +
           photo.server + "/" + photo.id + "_" + photo.secret + "_" + "n.jpg",
+        cardLink: "?photo=" + photo.id,
         photoLink: "https://www.flickr.com/photos/" + photo.owner + "/" + photo.id,
         photoTitle: photo.title,
-        ownerSpanId: "owner-" + photo.id,
+        ownerSpanId: "owner-" + photo.id
       });
       insertHtml("images", photoHtml);
-      loadInfo(photo.id);
+      loadInfo(photo.id, "showPhotoOwner");
     });
 
     // Show message if no photos found.
@@ -49,12 +62,56 @@
     }
   };
 
-  function showPhotoOwner(json) {
-    var owner = json.photo.owner.realname;
+  function resolveOwner(flickrPhotoJson)
+  {
+    var owner = flickrPhotoJson.owner.realname;
     if (owner.length < 1) {
-      owner = json.photo.owner.username
+      return flickrPhotoJson.owner.username
     }
-    document.getElementById("owner-"+ json.photo.id).innerHTML = "by " + owner;
+    return "by " + owner;
+  }
+
+  function showPhotoOwner(json) {
+    document.getElementById("owner-"+ json.photo.id).innerHTML = resolveOwner(json.photo);
+  }
+
+  function showPhotoCard(json) {
+    var photo = json.photo;
+    var photoHtml = photoTemplate({
+      fullSize: true,
+      cardText: "Enter your message here",
+      imgSrc: "https://farm" + photo.farm + ".staticflickr.com/" +
+        photo.server + "/" + photo.id + "_" + photo.secret + "_" + "b.jpg",
+      photoLink: photo.urls.url[0]._content,
+      photoTitle: photo.title._content,
+      photoOwner: resolveOwner(photo)
+    });
+    insertHtml("images", photoHtml);
+
+    // Get card text from URL parameter
+    var compressedText = getUrlParam("text");
+    if(compressedText) {
+      var text = LZString.decompressFromEncodedURIComponent(compressedText);
+      getTextDisplayElement().innerHTML = text;
+      getTextEditElement().value = text;
+    }
+
+    // Switch to text input on click
+    var textDisplayElement = getTextDisplayElement();
+    textDisplayElement.onclick = function() {
+      this.style.display = 'none';
+      var textEditElement = getTextEditElement();
+      textEditElement.style.display = 'block';
+      textEditElement.focus();
+      var applyEditedTextFunction = function(e) { onEnter(e, function() {
+        var text = textEditElement.value;
+        textDisplayElement.innerHTML = text;
+        textEditElement.style.display = 'none';
+        textDisplayElement.style.display = 'block';
+        window.history.replaceState(null, null, "?photo=" + photo.id + "&text=" + LZString.compressToEncodedURIComponent(text));
+      })};
+      textEditElement.onkeypress = applyEditedTextFunction;
+    };
   }
 
   function removeAllChildren(elementId)
@@ -95,17 +152,18 @@
   };
 
   // https://mashupguide.net/1.0/html/ch08s07.xhtml
-  function loadInfo(photoId) {
+  function loadInfo(photoId, callbackName) {
     var data = {
       "method": "flickr.photos.getInfo",
       "format": "json",
       "api_key": KEY,
-      "jsoncallback": "showPhotoOwner",
+      "jsoncallback": callbackName,
       "photo_id": photoId
     }
     loadJsonP("https://api.flickr.com/services/rest", data);
   }
 
+  /** Search for multiple photos by tag */
   function loadPhotos(tags) {
     showMessage("Hold on, Getcard loads you some photos...");
 
@@ -161,13 +219,30 @@
     loadPhotos(tags);
   }
 
+  /** Load photo card based on URL parameter photo */
+  function loadPhotoCardBasedOnUrl() {
+    var photoId = getUrlParam("photo");
+    loadInfo(photoId, "showPhotoCard");
+  }
+
+  /** Calls the right function based on parameters */
+  function route() {
+    if (getUrlParam("photo")) {
+      loadPhotoCardBasedOnUrl();
+    }
+    else {
+      loadPhotosBasedOnUrl();
+    }
+  }
+
   // Load photos on browser back navigation
-  window.onpopstate = loadPhotosBasedOnUrl;
+  window.onpopstate = route;
 
   // Export functions for flickr API JSONP callback
   window.showPhotos = showPhotos;
   window.showPhotoOwner = showPhotoOwner;
+  window.showPhotoCard = showPhotoCard;
 
-  loadPhotosBasedOnUrl();
+  route();
 
 })(window, document);

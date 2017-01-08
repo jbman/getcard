@@ -8,6 +8,16 @@ body {
 a:link, a:visited, a:hover, a:active {
   color: black;
 }
+input[type=text] {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #000000;
+}
+/* Prevent focus border in chrome, highlight fat line */
+input[type=text]:focus {
+  outline: none;
+  border-bottom: 2px solid #000000;
+}
 .search {
   text-align: center;
 }
@@ -15,15 +25,10 @@ a:link, a:visited, a:hover, a:active {
   white-space: nowrap;
 }
 #search-text {
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid #000000;
   width: 140px;
 }
-/* Prevent focus border in chrome, highlight fat line */
-#search-text:focus {
-  outline: none;
-  border-bottom: 2px solid #000000;
+#search-text {
+  width: 140px;
 }
 #search-button {
   display: inline-block;
@@ -44,6 +49,14 @@ a:link, a:visited, a:hover, a:active {
   margin: 20px;
   text-align: center;
 }
+.cardtext {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+.cardtext-edit {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
 .photoframe {
   display: inline-flex;
   flex-direction: column;
@@ -51,9 +64,13 @@ a:link, a:visited, a:hover, a:active {
   box-shadow: 10px 10px 10px silver;
   padding: 10px 10px 10px 10px;
   border: 1px solid gray;
-  background: linear-gradient(-45deg, rgba(255,255,255,1) 0%,#efefef 100%);
+  background: linear-gradient(-45deg, rgba(255,255,255,1) 0%, #efefef 100%);
 }
-img {
+.fullsize {
+  max-height: 80vw;
+  max-width: 80vh;
+}
+.photo {
   width: 100%;
 }
 .photolink {

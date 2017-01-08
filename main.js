@@ -5,14 +5,20 @@
   const KEY = "04df5d99a76b10643b60f941c955dc9a";
 
   // Compile HTML templates into JS template render functions
-  var templateScript = document.getElementById("photo-template").innerHTML;
-  var photoTemplate = Handlebars.compile(templateScript);
-  var searchTextElement = document.getElementById("search-text");
-  var searchButtonElement = document.getElementById("search-button")
+  const photoTemplate = Handlebars.compile(document.getElementById("photo-template").innerHTML);
+  const emptyResultTemplate = Handlebars.compile(document.getElementById("empty-result-template").innerHTML);
+
+  const searchTextElement = document.getElementById("search-text");
+  // Click search button when enter is hit in search text field
+  searchTextElement.onkeypress = (e) => { onEnter(e, loadPhotosBasedOnSearchInput) };
+
+  const searchButtonElement = document.getElementById("search-button");
+  searchButtonElement.onclick = loadPhotosBasedOnSearchInput;
 
   function showPhotos(json) {
     // Clear existing photo elements
     removeAllChildren("images");
+
     // Show photos
     json.photos.photo.forEach(function(photo, i) {
       var photoHtml = photoTemplate({
@@ -25,6 +31,12 @@
       document.getElementById("images").insertAdjacentHTML("beforeend", photoHtml);
       loadInfo(photo.id);
     });
+
+    // Show message if no photos found.
+    if (json.photos.photo.length <= 0) {
+      var emptyResultHtml = emptyResultTemplate({"tags": searchTextElement.value });
+      document.getElementById("images").insertAdjacentHTML("beforeend", emptyResultHtml);
+    }
   };
 
   function showPhotoOwner(json) {
@@ -45,17 +57,17 @@
 
   function getUrlParam(variable)
   {
-         var query = window.location.search.substring(1);
-         var vars = query.split("&");
-         for (var i=0;i<vars.length;i++) {
-                 var pair = vars[i].split("=");
-                 if(pair[0] == variable){
-                   var value = pair[1];
-                   if (value.length > 0)
-                     return value;
-                 }
-         }
-         return false ;
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    for (var i=0;i<vars.length;i++) {
+      var pair = vars[i].split("=");
+      if(pair[0] == variable){
+        var value = pair[1];
+        if (value.length > 0)
+          return value;
+        }
+    }
+    return false ;
   }
 
   // https://mashupguide.net/1.0/html/ch08s07.xhtml
@@ -74,6 +86,11 @@
   }
 
   function loadPhotos(tags) {
+
+    // Update URL with the new search text to get a referencable URL and a URL history entry
+    var title = "[_] with " + tags;
+    document.title = title; // FF doesn't update title provided to pushState
+
     var data = {
       "api_key": KEY,
       "media": "photos",
@@ -95,32 +112,37 @@
     });
   }
 
-  function onSearchButtonClick() {
-      var searchTextValue = searchTextElement.value;
-      // Update URL with the new search text to get a referencable URL and a URL history entry
-      var title = "[_] with " + searchTextValue;
-      window.history.pushState(null, searchTextValue, "?tags=" + searchTextValue);
-      document.title = title; // FF doesn't updat title provided to pushState
-      loadPhotos(searchTextValue);
+  /** Loads photos after based on the text in the search field  */
+  function loadPhotosBasedOnSearchInput() {
+      var tags = searchTextElement.value;
+      // Add new page to browser history
+      window.history.pushState(null, null, "?tags=" + tags);
+      loadPhotos(tags);
   }
 
-  searchButtonElement.onclick = onSearchButtonClick;
-
-  // Click search button when enter is hit in search text field
-  searchTextElement.onkeypress = function(e) {
+  function onEnter(e, onEnterFunction) {
     var keyCode = e.keyCode || e.which;
     if (keyCode == '13'){
-      onSearchButtonClick();
+      onEnterFunction();
       return false;
     }
   }
 
-  // Export callback functions
+  /** Loads photos based on URL parameter "tags" */
+  function loadPhotosBasedOnUrl() {
+    var tags = getUrlParam("tags") || "kitten";
+    // Fill in search value based on URL parameter
+    searchTextElement.value = tags;
+    loadPhotos(tags);
+  }
+
+  // Load photos on browser back navigation
+  window.onpopstate = loadPhotosBasedOnUrl;
+
+  // Export functions for flickr API JSONP callback
   window.showPhotos = showPhotos;
   window.showPhotoOwner = showPhotoOwner;
 
-  // When page is loaded: Load photos based on URL parameter
-  var tags = getUrlParam("tags") || "kitten";
-  searchTextElement.value = tags;
-  loadPhotos(tags);
+  loadPhotosBasedOnUrl();
+
 })(window, document);

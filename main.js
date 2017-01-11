@@ -2,7 +2,7 @@
 
 (function(window, document) {
 
-  const KEY = "04df5d99a76b10643b60f941c955dc9a";
+  const KEY = "d0afae1bcbaddae04105e76a8c346928";
 
   // Compile HTML templates into JS template render functions
   const photoTemplate = Handlebars.compile(document.getElementById("photo-template").innerHTML);
